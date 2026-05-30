@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GMC Plexiglass — Manager Portal</title>
+<style>
+:root{
+  --announce:#0D1B2A;
+  --navy:#1A3A5C;
+  --navy-h:#122B47;
+  --gold:#C8960C;
+  --gold-l:#E5A90E;
+  --white:#FFFFFF;
+  --bg:#F5F6F8;
+  --card:#FFFFFF;
+  --text:#1A1D2E;
+  --muted:#6B7280;
+  --border:#E5E7EB;
+  --success:#16A34A;
+  --danger:#DC2626;
+  --warning:#D97706;
+  --info:#2563EB;
+  --radius:10px;
+  --shadow:0 1px 8px rgba(0,0,0,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── ANNOUNCEMENT BAR ── */
+.announce{background:var(--announce);color:#fff;text-align:center;padding:9px 16px;font-size:.78rem;letter-spacing:.3px}
+.announce a{color:var(--gold-l);text-decoration:none;font-weight:700}
+
+/* ── SITE HEADER ── */
+.site-header{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-logo{width:38px;height:38px;border-radius:7px;object-fit:cover;border:1.5px solid var(--border)}
+.brand-logo-fb{width:38px;height:38px;border-radius:7px;background:var(--navy);color:var(--gold);font-weight:900;font-size:.7rem;display:none;align-items:center;justify-content:center;letter-spacing:-.5px}
+.brand-name{font-size:1.05rem;font-weight:800;color:var(--navy);letter-spacing:.2px}
+.brand-name span{color:var(--gold)}
+.header-right{display:flex;align-items:center;gap:10px}
+.portal-badge{background:var(--gold);color:#fff;font-size:.67rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.header-date{font-size:.75rem;color:var(--muted)}
+
+/* ── TAB NAV ── */
+.tab-nav{background:var(--white);border-bottom:2px solid var(--border);display:flex;overflow-x:auto;padding:0 20px}
+.tab-nav::-webkit-scrollbar{height:0}
+.tab-btn{padding:13px 17px;border:none;background:none;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:inherit}
+.tab-btn:hover{color:var(--navy)}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--gold)}
+
+/* ── MAIN ── */
+main{padding:20px;max-width:1060px;margin:0 auto}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ── SECTION TITLE ── */
+.section-title{font-size:1.1rem;font-weight:800;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── CARDS ── */
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:14px}
+.card-body{padding:18px}
+.card-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--border)}
+.card-title{font-size:.9rem;font-weight:700;color:var(--navy)}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:16px;text-align:center;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--navy))}
+.kpi-val{font-size:1.45rem;font-weight:800;color:var(--kc,var(--navy));margin-bottom:2px}
+.kpi-label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;line-height:1.3}
+.kpi.gold{--kc:var(--gold)}.kpi.green{--kc:var(--success)}.kpi.red{--kc:var(--danger)}.kpi.amber{--kc:var(--warning)}.kpi.info{--kc:var(--info)}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.field input,.field select,.field textarea{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:.875rem;font-family:inherit;background:#fff;transition:border-color .15s;color:var(--text)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,58,92,.1)}
+.field input[readonly]{background:#F9FAFB;color:var(--muted)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border:none;border-radius:7px;font-size:.82rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s}
+.btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--navy-h)}
+.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:var(--gold-l)}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-ghost{background:#F3F4F6;color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:.78rem}
+.btn-xs{padding:3px 8px;font-size:.7rem;border-radius:5px}
+
+/* ── TABLES ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem}
+.tbl th{background:#F9FAFB;padding:9px 12px;text-align:left;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1.5px solid var(--border)}
+.tbl td{padding:10px 12px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
+.tbl tr:last-child td{border:none}
+.tbl tr:hover td{background:#FAFAFA}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:700}
+.b-pending{background:#FEF3C7;color:#92400E}.b-done{background:#D1FAE5;color:#065F46}
+.b-delivered{background:#DBEAFE;color:#1E40AF}.b-cancelled{background:#FEE2E2;color:#991B1B}
+
+/* ── BAR CHART ── */
+.bar-chart{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:.78rem}
+.bar-lbl{width:120px;text-align:left;color:var(--muted);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.bar-track{flex:1;background:#F3F4F6;border-radius:20px;height:16px;overflow:hidden}
+.bar-fill{height:100%;border-radius:20px;transition:width .5s ease;min-width:2px;background:linear-gradient(90deg,var(--navy),#2D5282)}
+.bar-fill.gold{background:linear-gradient(90deg,var(--gold),var(--gold-l))}
+.bar-fill.green{background:linear-gradient(90deg,#16A34A,#22C55E)}
+.bar-fill.info{background:linear-gradient(90deg,#2563EB,#3B82F6)}
+.bar-val{width:60px;text-align:right;font-weight:700;font-size:.74rem;flex-shrink:0}
+
+/* ── P&L BOX ── */
+.pnl{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-h) 100%);border-radius:var(--radius);padding:20px;color:#fff;margin-bottom:14px}
+.pnl-heading{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;opacity:.5;margin-bottom:14px}
+.pnl-row{display:flex;justify-content:space-between;padding:5px 0;font-size:.88rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.pnl-row:last-child{border:none}
+.pnl-net{display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;padding-top:10px;margin-top:6px;border-top:1px solid rgba(255,255,255,.2);color:var(--gold-l)}
+
+/* ── INVENTORY ── */
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px}
+.stock-card{background:#F9FAFB;border-radius:8px;padding:12px;border:1.5px solid var(--border)}
+.stock-card.low-stock{border-color:#FCA5A5;background:#FFF5F5}
+.stock-card.good-stock{border-color:#86EFAC;background:#F0FFF4}
+.stock-name{font-size:.78rem;font-weight:700;margin-bottom:6px;line-height:1.3}
+.stock-val{font-size:1.25rem;font-weight:900;color:var(--navy)}
+.stock-sub{font-size:.68rem;color:var(--muted);margin-top:2px}
+.stock-bar{height:5px;background:#E5E7EB;border-radius:5px;margin-top:8px;overflow:hidden}
+.stock-bar-fill{height:100%;border-radius:5px;background:var(--success)}
+.stock-bar-fill.low{background:var(--danger)}
+.stock-warn{font-size:.68rem;color:var(--danger);font-weight:700;margin-top:5px}
+
+/* ── ORDER ITEM ROW ── */
+.item-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding:11px;background:#F9FAFB;border-radius:8px;border:1px solid var(--border);margin-bottom:8px}
+.item-row .field{flex:1;min-width:90px}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .icon{font-size:2rem;opacity:.35;margin-bottom:8px}
+.info-box{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 14px;font-size:.78rem;color:#1D4ED8;margin-bottom:12px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.status-sel{border:none;font-weight:700;font-size:.7rem;border-radius:20px;padding:3px 9px;font-family:inherit;cursor:pointer}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.two-col{grid-template-columns:1fr}}
+.tag{display:inline-block;background:#EFF6FF;color:var(--navy);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px}
+
+/* ── PRINT ── */
+@media print{
+  .announce,.site-header,.tab-nav,.no-print{display:none!important}
+  body{background:#fff}main{padding:0;max-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ░░ ANNOUNCEMENT BAR ░░ -->
+<div class="announce">
+  NOW YOU CAN GET AN INSTANT QUOTE FOR A CUT-TO-MEASURE PLEXIGLASS —
+  <a href="https://gmcplexiglass.com" target="_blank">View Catalog ↗</a>
+</div>
+
+<!-- ░░ SITE HEADER ░░ -->
+<header class="site-header">
+  <a class="brand" href="#">
+    <img class="brand-logo" src="https://gmcplexiglass.com/cdn/shop/files/BEST_GMC_PLEXIGLASS_square_d2a354d7-5c51-4d49-852a-0a759e610b35.jpg"
+      alt="GMC" onerror="this.style.display='none';document.querySelector('.brand-logo-fb').style.display='flex'">
+    <div class="brand-logo-fb">GMC</div>
+    <span class="brand-name">GMC <span>Plexiglass</span></span>
+  </a>
+  <div class="header-right">
+    <span class="header-date" id="hdr-date"></span>
+    <span class="portal-badge">Manager Portal</span>
+  </div>
+</header>
+
+<!-- ░░ TAB NAV ░░ -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('dash')">Dashboard</button>
+  <button class="tab-btn" onclick="showTab('orders')">Orders</button>
+  <button class="tab-btn" onclick="showTab('neworder')">+ New Order</button>
+  <button class="tab-btn" onclick="showTab('customers')">Customers</button>
+  <button class="tab-btn" onclick="showTab('inventory')">Inventory</button>
+  <button class="tab-btn" onclick="showTab('finance')">Financials</button>
+  <button class="tab-btn" onclick="showTab('staff')">Staff</button>
+  <button class="tab-btn" onclick="showTab('docs')">📁 Documents</button>
+  <button class="tab-btn" onclick="showTab('settings')">Settings</button>
+</nav>
+
+<main>
+
+<!-- ════════════════════════ DASHBOARD ════════════════════════ -->
+<div id="tab-dash" class="tab-content active">
+  <div class="kpi-grid">
+    <div class="kpi gold"><div class="kpi-val" id="k-rev">$0</div><div class="kpi-label">Revenue This Month</div></div>
+    <div class="kpi green"><div class="kpi-val" id="k-profit">$0</div><div class="kpi-label">Est. Net Profit</div></div>
+    <div class="kpi"><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">Orders This Month</div></div>
+    <div class="kpi info"><div class="kpi-val" id="k-customers">0</div><div class="kpi-label">Total Customers</div></div>
+    <div class="kpi amber"><div class="kpi-val" id="k-wages">$0</div><div class="kpi-label">Staff Wages</div></div>
+    <div class="kpi red"><div class="kpi-val" id="k-matcost">$0</div><div class="kpi-label">Est. Material Cost</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Recent Orders</span>
+        <button class="btn btn-gold btn-sm" onclick="showTab('neworder')">+ New Order</button>
+      </div>
+      <div class="card-body" style="padding:0"><div id="d-orders"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Top Customers</span></div>
+      <div class="card-body"><div id="d-customers"></div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Revenue by Material</span></div>
+      <div class="card-body"><div id="d-mat-chart"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Monthly Revenue</span></div>
+      <div class="card-body"><div id="d-monthly-chart"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ ORDERS ════════════════════════ -->
+<div id="tab-orders" class="tab-content">
+  <div class="section-title">Order Management</div>
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">All Orders</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="text" id="o-search" placeholder="Search customer or order #..." style="padding:6px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:.8rem;min-width:190px" oninput="renderOrders()">
+        <select id="o-status" style="padding:6px 10px;font-size:.78rem;border:1.5px solid var(--border);border-radius:7px;background:#fff" onchange="renderOrders()">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="done">Completed</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select id="o-month" style="padding:6px 10px;font-size:.78rem;border:1.5px solid var(--border);border-radius:7px;background:#fff" onchange="renderOrders()"></select>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0"><div id="orders-wrap"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════ NEW ORDER ════════════════════════ -->
+<div id="tab-neworder" class="tab-content">
+  <div class="section-title">Create New Cutting Order</div>
+  <div class="card">
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field"><label>Order #</label><input type="text" id="no-num" readonly></div>
+        <div class="field"><label>Date</label><input type="date" id="no-date"></div>
+        <div class="field"><label>Customer Name</label><input type="text" id="no-client" placeholder="Name or company"></div>
+        <div class="field"><label>Phone</label><input type="text" id="no-phone" placeholder="514-xxx-xxxx"></div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-weight:700;font-size:.88rem;color:var(--navy)">Cut Pieces</span>
+        <button class="btn btn-ghost btn-sm" onclick="addNOItem()">+ Add Piece</button>
+      </div>
+      <div id="no-items"></div>
+      <div class="divider"></div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px">
+        <div>
+          <div style="font-size:.82rem;color:var(--muted)">Subtotal: <strong id="no-sub">$0.00</strong></div>
+          <div style="font-size:.82rem;color:var(--muted)">HST (<span id="no-tax-pct">13</span>%): <strong id="no-tax">$0.00</strong></div>
+          <div style="font-size:1.1rem;font-weight:900;color:var(--navy);margin-top:3px">Total: <span id="no-total">$0.00 CAD</span></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div class="field"><label>Notes</label><input type="text" id="no-notes" placeholder="Additional notes..." style="min-width:200px"></div>
+          <button class="btn btn-gold" onclick="saveNewOrder()">Save Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ CUSTOMERS ════════════════════════ -->
+<div id="tab-customers" class="tab-content">
+  <div class="section-title">Customer Database</div>
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">All Customers</span>
+      <input type="text" id="cl-search" placeholder="Search..." style="padding:6px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:.8rem;min-width:180px" oninput="renderCustomers()">
+    </div>
+    <div class="card-body" style="padding:0"><div id="customers-wrap"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════ INVENTORY ════════════════════════ -->
+<div id="tab-inventory" class="tab-content">
+  <div class="section-title">Sheet Inventory</div>
+  <div class="info-box">Each sheet = 48" × 96" (4,608 in²). Inventory is deducted from fulfilled orders. Set initial stock counts below.</div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Set Initial Stock</span></div>
+    <div class="card-body">
+      <div id="inv-inputs"></div>
+      <button class="btn btn-navy" onclick="saveInventory()" style="margin-top:10px">Save Stock</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Current Stock Levels</span></div>
+    <div class="card-body"><div class="stock-grid" id="stock-grid"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════ FINANCIALS ════════════════════════ -->
+<div id="tab-finance" class="tab-content">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+    <label style="font-size:.8rem;font-weight:700;color:var(--muted)">Period:</label>
+    <select id="fin-month" style="padding:7px 11px;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:#fff" onchange="renderFinance()"></select>
+  </div>
+  <div id="pnl-box"></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Revenue by Material</span></div>
+      <div class="card-body"><div id="fin-mat"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Orders by Status</span></div>
+      <div class="card-body"><div id="fin-status"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Revenue — Last 6 Months</span></div>
+    <div class="card-body"><div id="fin-monthly"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════ STAFF ════════════════════════ -->
+<div id="tab-staff" class="tab-content">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+    <label style="font-size:.8rem;font-weight:700;color:var(--muted)">Month:</label>
+    <select id="st-month" style="padding:7px 11px;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:#fff" onchange="renderStaff()"></select>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-val" id="st-hours">0h</div><div class="kpi-label">Total Hours</div></div>
+    <div class="kpi amber"><div class="kpi-val" id="st-wages">$0</div><div class="kpi-label">Wages Due</div></div>
+    <div class="kpi red"><div class="kpi-val" id="st-gas">$0</div><div class="kpi-label">Gas Expenses</div></div>
+    <div class="kpi red"><div class="kpi-val" id="st-total">$0</div><div class="kpi-label">Total Staff Cost</div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Work Hours Log</span></div>
+    <div class="card-body" style="padding:0"><div id="st-hours-tbl"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-hdr"><span class="card-title">Gas & Travel Log</span></div>
+    <div class="card-body" style="padding:0"><div id="st-gas-tbl"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════ DOCUMENTS ════════════════════════ -->
+<div id="tab-docs" class="tab-content">
+  <div class="section-title">Documents & Files</div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Upload New File</span></div>
+    <div class="card-body">
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:200px"><label>Label / Description</label><input type="text" id="doc-label" placeholder="e.g. Supplier Invoice, Contract, Quote..."></div>
+        <button class="btn btn-gold" onclick="$('_fi-doc').click()">📎 Choose File(s)</button>
+      </div>
+      <input type="file" id="_fi-doc" accept="image/*,.pdf" multiple style="display:none" onchange="uploadDocs(this)">
+      <div style="margin-top:12px;padding:14px;background:#F9FAFB;border-radius:8px;border:2px dashed var(--border);text-align:center;font-size:.8rem;color:var(--muted)">
+        Supports: JPG, PNG, PDF &nbsp;·&nbsp; Files stored locally in your browser &nbsp;·&nbsp; No size limit
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">All Documents</span>
+      <input type="text" id="doc-search" placeholder="🔍 Search..." style="padding:6px 10px;font-size:.78rem;border:1.5px solid var(--border);border-radius:7px;min-width:180px" oninput="renderDocs()">
+    </div>
+    <div class="card-body" style="padding:0"><div id="docs-wrap"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════ SETTINGS ════════════════════════ -->
+<div id="tab-settings" class="tab-content">
+  <div class="section-title">Settings</div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Business Information</span></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field"><label>Business Name</label><input type="text" id="s-biz" value="GMC Plexiglass"></div>
+        <div class="field"><label>Phone</label><input type="text" id="s-ph" placeholder="514-xxx-xxxx"></div>
+        <div class="field"><label>Email</label><input type="text" id="s-em" placeholder="info@gmcplexiglass.com"></div>
+      </div>
+      <div class="form-grid">
+        <div class="field" style="grid-column:1/-1"><label>Address</label><input type="text" id="s-ad" placeholder="Full store address"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Pricing Configuration</span></div>
+    <div class="card-body">
+      <div class="info-box">Sheet prices are loaded directly from <a href="https://gmcplexiglass.com" target="_blank" style="color:var(--navy);font-weight:700">gmcplexiglass.com</a>. Markup is applied on top of material cost to calculate selling price.</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Tax Rate</label>
+          <select id="s-tax">
+            <option value="0">No tax</option>
+            <option value="5">5% — GST only</option>
+            <option value="13" selected>13% — HST (Ontario)</option>
+            <option value="14.975">14.975% — QST+GST (Quebec)</option>
+            <option value="15">15% — HST (Maritime)</option>
+          </select>
+        </div>
+        <div class="field"><label>Cutting Fee / Piece ($)</label><input type="number" id="s-cut" step="0.5" value="2"></div>
+        <div class="field"><label>Material Markup (%)</label><input type="number" id="s-markup" step="5" value="50"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title" style="color:var(--danger)">⚠ Danger Zone</span></div>
+    <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-danger btn-sm" onclick="clearOrders()">Delete All Orders</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAll()">Delete All Data</button>
+    </div>
+  </div>
+  <button class="btn btn-navy" onclick="saveSettings()" style="margin-top:6px">Save Settings</button>
+</div>
+
+</main>
+
+<!-- ░░ FILE INPUT + ATTACHMENT MODAL ░░ -->
+<input type="file" id="_fi" accept="image/*,.pdf" multiple style="display:none" onchange="_handleUpload(this)">
+<div id="attach-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;justify-content:center;align-items:center;padding:16px">
+  <div style="background:#fff;border-radius:14px;padding:22px;width:100%;max-width:480px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-weight:800;font-size:.95rem;color:var(--navy)" id="am-title">Attachments</span>
+      <button onclick="closeAttach()" style="border:none;background:#F3F4F6;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.85rem">✕</button>
+    </div>
+    <div id="am-files"></div>
+    <button id="am-ubtn" class="btn btn-navy btn-sm" onclick="_triggerUpload()" style="width:100%;justify-content:center;margin-top:10px">+ Upload Image / PDF</button>
+  </div>
+</div>
+
+<script>
+/* ── MATERIALS (from gmcplexiglass.com) ── */
+const MATS=[
+  {n:'Clear — 3mm (1/8")',cost:115},{n:'Black — 3mm (1/8")',cost:165},
+  {n:'Clear Frosted — 3mm',cost:165},{n:'Opaque White — 3mm (1/8")',cost:165},
+  {n:'Smoked Brown — 3mm',cost:185},{n:'Clear — 4.5mm (3/16")',cost:165},
+  {n:'Black — 4.5mm (3/16")',cost:185},{n:'Clear Frosted — 4.5mm',cost:185},
+  {n:'Opaque White — 4.5mm',cost:185},{n:'Smoked Brown — 4.5mm',cost:225},
+  {n:'Gold Mirror — 4.5mm',cost:265},{n:'Silver Mirror — 4.5mm',cost:265},
+  {n:'Clear — 5.5mm',cost:185},
+];
+const SHEET_IN2=4608;
+
+/* ── STORAGE (shared with Employee Portal) ── */
+const ld=k=>JSON.parse(localStorage.getItem('gmc_'+k)||'[]');
+const sv=(k,v)=>localStorage.setItem('gmc_'+k,JSON.stringify(v));
+const ldS=()=>JSON.parse(localStorage.getItem('gmc_settings')||'{}');
+const svS=s=>localStorage.setItem('gmc_settings',JSON.stringify(s));
+const ldB=k=>JSON.parse(localStorage.getItem('gmcbiz_'+k)||'{}');
+const svB=(k,v)=>localStorage.setItem('gmcbiz_'+k,JSON.stringify(v));
+const $=id=>document.getElementById(id);
+
+/* ── INIT ── */
+let noCount=0;
+function init(){
+  const today=new Date().toISOString().split('T')[0];
+  $('no-date').value=today;
+  const now=new Date();
+  $('hdr-date').textContent=now.toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  applySettings(); buildFilters(); renderDash(); renderOrders(); renderCustomers(); renderInventory(); renderFinance(); renderStaff(); genNoNum(); addNOItem();
+}
+function showTab(t){
+  document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
+  $('tab-'+t).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(e=>{if(e.getAttribute('onclick')?.includes("'"+t+"'"))e.classList.add('active')});
+  if(t==='dash')renderDash();
+  if(t==='orders'){buildFilters();renderOrders();}
+  if(t==='customers')renderCustomers();
+  if(t==='inventory')renderInventory();
+  if(t==='finance')renderFinance();
+  if(t==='staff')renderStaff();
+  if(t==='docs')renderDocs();
+}
+
+/* ── HELPERS ── */
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fmtDate(d){if(!d)return'—';const[y,m,dd]=d.split('-');return`${MN[+m-1]} ${+dd}, ${y}`}
+function fmtMon(m){const[y,mo]=m.split('-');return`${MN[+mo-1]} ${y}`}
+function curM(){return new Date().toISOString().substring(0,7)}
+function allMonths(){
+  const all=[...ld('orders'),...ld('hours'),...ld('gas')].map(r=>(r.date||'').substring(0,7)).filter(Boolean);
+  const set=[...new Set(all)].sort().reverse(); const now=curM();
+  if(!set.includes(now))set.unshift(now);return set;
+}
+function buildFilters(){
+  const months=allMonths(),now=curM();
+  ['o-month','fin-month','st-month'].forEach(id=>{
+    const el=$(id);if(!el)return;const cur=el.value||now;
+    el.innerHTML=months.map(m=>`<option value="${m}"${m===cur?' selected':''}>${fmtMon(m)}</option>`).join('');
+  });
+}
+function matCostFromOrders(orders){
+  const cfg=ldS(),markup=(+cfg.markup||50)/100; let cost=0;
+  orders.forEach(o=>o.items.forEach(item=>{
+    const mi=MATS.findIndex(m=>m.n===item.material);
+    if(mi>=0)cost+=item.w*item.h*item.qty/SHEET_IN2*MATS[mi].cost;
+  })); return cost;
+}
+const SL={pending:'Pending',done:'Completed',delivered:'Delivered',cancelled:'Cancelled'};
+const SC={pending:'b-pending',done:'b-done',delivered:'b-delivered',cancelled:'b-cancelled'};
+
+/* ── DASHBOARD ── */
+function renderDash(){
+  const m=curM(),allO=ld('orders'),mO=allO.filter(o=>o.date.startsWith(m));
+  const hrs=ld('hours').filter(r=>r.date.startsWith(m)),gas=ld('gas').filter(r=>r.date.startsWith(m));
+  const rev=mO.reduce((s,o)=>s+o.total,0);
+  const matCost=matCostFromOrders(mO);
+  const wages=hrs.reduce((s,r)=>s+r.earnings,0),gasCost=gas.reduce((s,r)=>s+r.amount,0);
+  const profit=rev-matCost-wages-gasCost;
+  const custCount=[...new Set(allO.map(o=>o.client))].length;
+  $('k-rev').textContent='$'+rev.toFixed(0);$('k-profit').textContent='$'+profit.toFixed(0);
+  $('k-orders').textContent=mO.length;$('k-customers').textContent=custCount;
+  $('k-wages').textContent='$'+wages.toFixed(0);$('k-matcost').textContent='$'+matCost.toFixed(0);
+
+  // Recent orders
+  const ro=allO.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  $('d-orders').innerHTML=ro.length
+    ?`<table class="tbl"><thead><tr><th>Order #</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr></thead><tbody>
+${ro.map(o=>`<tr style="cursor:pointer"><td><strong>${o.num}</strong></td><td>${o.client}</td><td>${fmtDate(o.date)}</td><td><strong>$${o.total.toFixed(2)}</strong></td><td><span class="badge ${SC[o.status]||'b-pending'}">${SL[o.status]||o.status}</span></td></tr>`).join('')}
+</tbody></table>`
+    :'<div class="empty"><div class="icon">✂️</div><p>No orders yet</p></div>';
+
+  // Top customers
+  const cmap={};allO.forEach(o=>{if(!cmap[o.client])cmap[o.client]={t:0,c:0};cmap[o.client].t+=o.total;cmap[o.client].c++});
+  const top=Object.entries(cmap).sort((a,b)=>b[1].t-a[1].t).slice(0,5);
+  const maxC=top[0]?.[1]?.t||1;
+  $('d-customers').innerHTML=top.length
+    ?`<div class="bar-chart">${top.map(([n,d])=>`<div class="bar-row"><div class="bar-lbl">${n}</div><div class="bar-track"><div class="bar-fill gold" style="width:${d.t/maxC*100}%"></div></div><div class="bar-val">$${d.t.toFixed(0)}</div></div>`).join('')}</div>`
+    :'<div class="empty"><div class="icon">👥</div><p>No customers yet</p></div>';
+
+  // Material chart
+  const mmap={};allO.forEach(o=>o.items.forEach(i=>{const s=i.material.split('—')[0].trim();mmap[s]=(mmap[s]||0)+i.lineTotal}));
+  const topm=Object.entries(mmap).sort((a,b)=>b[1]-a[1]).slice(0,6);const maxM=topm[0]?.[1]||1;
+  $('d-mat-chart').innerHTML=topm.length
+    ?`<div class="bar-chart">${topm.map(([n,v])=>`<div class="bar-row"><div class="bar-lbl">${n}</div><div class="bar-track"><div class="bar-fill" style="width:${v/maxM*100}%"></div></div><div class="bar-val">$${v.toFixed(0)}</div></div>`).join('')}</div>`
+    :'<div class="empty"><div class="icon">📦</div><p>No data</p></div>';
+
+  // Monthly chart
+  const months=allMonths().slice(0,6).reverse();
+  const mdata=months.map(m=>({m,r:allO.filter(o=>o.date.startsWith(m)).reduce((s,o)=>s+o.total,0)}));
+  const maxR=Math.max(...mdata.map(x=>x.r),1);
+  $('d-monthly-chart').innerHTML=`<div class="bar-chart">${mdata.map(x=>`<div class="bar-row"><div class="bar-lbl">${fmtMon(x.m)}</div><div class="bar-track"><div class="bar-fill green" style="width:${x.r/maxR*100}%"></div></div><div class="bar-val">$${x.r.toFixed(0)}</div></div>`).join('')}</div>`;
+}
+
+/* ── ORDERS ── */
+function setStatus(id,status){
+  const orders=ld('orders'),idx=orders.findIndex(o=>o.id===id);
+  if(idx>=0){orders[idx].status=status;sv('orders',orders);}renderOrders();
+}
+function delOrder(id){
+  if(!confirm('Permanently delete this order?'))return;
+  sv('orders',ld('orders').filter(o=>o.id!==id));renderOrders();renderDash();
+}
+function printInvoice(id){
+  const o=ld('orders').find(x=>x.id===id);if(!o)return;
+  const cfg=ldS();
+  const html=`<html><head><title>Invoice ${o.num}</title>
+<style>body{font-family:-apple-system,sans-serif;padding:32px;direction:ltr}table{width:100%;border-collapse:collapse}th{background:#1A3A5C;color:#fff;padding:9px 12px;text-align:left}td{padding:8px 12px;border-bottom:1px solid #eee}.logo{font-size:1.5rem;font-weight:900;color:#1A3A5C}.logo span{color:#C8960C}</style>
+</head><body>
+<div style="display:flex;justify-content:space-between;border-bottom:3px solid #1A3A5C;padding-bottom:16px;margin-bottom:20px">
+<div><div class="logo">GMC <span>Plexiglass</span></div>${cfg.bizAd?'<p>'+cfg.bizAd+'</p>':''}${cfg.bizPh?'<p>'+cfg.bizPh+'</p>':''}<p>gmcplexiglass.com</p></div>
+<div style="text-align:right"><h2 style="color:#1A3A5C">Invoice #${o.num}</h2><p>Date: ${fmtDate(o.date)}</p><p>Bill To: <strong>${o.client}</strong></p>${o.phone?'<p>'+o.phone+'</p>':''}</div>
+</div>
+<table><thead><tr><th>Product</th><th>Size</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr></thead>
+<tbody>${o.items.map(i=>`<tr><td>${i.material}</td><td>${i.w}" × ${i.h}"</td><td>${i.qty}</td><td>$${i.unitPrice.toFixed(2)}</td><td>$${i.lineTotal.toFixed(2)}</td></tr>`).join('')}</tbody></table>
+<div style="text-align:right;margin-top:16px">
+<p>Subtotal: $${o.sub.toFixed(2)}</p><p>Tax (${cfg.tax||13}%): $${o.tax.toFixed(2)}</p>
+<p style="font-size:1.1rem;font-weight:900;color:#1A3A5C">TOTAL: $${o.total.toFixed(2)} CAD</p></div>
+${o.notes?'<p><strong>Notes:</strong> '+o.notes+'</p>':''}
+<p style="margin-top:24px;text-align:center;color:#888;font-size:.8rem">Thank you for your business · GMC Plexiglass · gmcplexiglass.com</p>
+</body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
+}
+function renderOrders(){
+  buildFilters();
+  const filter=$('o-status')?.value||'',month=$('o-month')?.value||curM(),search=($('o-search')?.value||'').toLowerCase();
+  let data=ld('orders').sort((a,b)=>b.date.localeCompare(a.date));
+  if(filter)data=data.filter(o=>o.status===filter);
+  if(month)data=data.filter(o=>o.date.startsWith(month));
+  if(search)data=data.filter(o=>o.client.toLowerCase().includes(search)||o.num.toLowerCase().includes(search));
+  const w=$('orders-wrap');
+  if(!data.length){w.innerHTML='<div class="empty"><div class="icon">✂️</div><p>No orders found</p></div>';return}
+  w.innerHTML=`<table class="tbl"><thead><tr><th>Order #</th><th>Date</th><th>Customer</th><th>Pieces</th><th>Subtotal</th><th>Tax</th><th>Total</th><th>Status</th><th>Files</th><th>Actions</th></tr></thead><tbody>
+${data.map(o=>`<tr><td><strong>${o.num}</strong></td><td>${fmtDate(o.date)}</td>
+<td><strong>${o.client}</strong>${o.phone?'<br><small style="color:var(--muted)">'+o.phone+'</small>':''}</td>
+<td style="color:var(--muted)">${o.items.length} pc</td>
+<td>$${o.sub.toFixed(2)}</td><td>$${o.tax.toFixed(2)}</td>
+<td><strong style="color:var(--navy)">$${o.total.toFixed(2)}</strong></td>
+<td><select class="status-sel ${SC[o.status]||'b-pending'}" onchange="setStatus(${o.id},this.value)">
+<option value="pending"${o.status==='pending'?' selected':''}>Pending</option>
+<option value="done"${o.status==='done'?' selected':''}>Completed</option>
+<option value="delivered"${o.status==='delivered'?' selected':''}>Delivered</option>
+<option value="cancelled"${o.status==='cancelled'?' selected':''}>Cancelled</option>
+</select></td>
+<td><button class="btn btn-ghost btn-xs" id="oab-${o.id}" onclick="openAttach('order_${o.id}','${o.num} — ${o.client}',renderOrders)" title="Attach files">📎</button></td>
+<td style="display:flex;gap:4px"><button class="btn btn-navy btn-xs" onclick="printInvoice(${o.id})">🖨</button><button class="btn btn-danger btn-xs" onclick="delOrder(${o.id})">✕</button></td>
+</tr>`).join('')}</tbody></table>`;
+  data.forEach(o=>_updBtn('oab-'+o.id,'order_'+o.id));
+}
+
+/* ── CUSTOMERS ── */
+function renderCustomers(){
+  const search=($('cl-search')?.value||'').toLowerCase();
+  const cmap={};
+  ld('orders').forEach(o=>{
+    if(!cmap[o.client])cmap[o.client]={name:o.client,phone:o.phone||'',count:0,total:0,last:''};
+    cmap[o.client].count++;cmap[o.client].total+=o.total;
+    if(!cmap[o.client].last||o.date>cmap[o.client].last)cmap[o.client].last=o.date;
+  });
+  let clients=Object.values(cmap).sort((a,b)=>b.total-a.total);
+  if(search)clients=clients.filter(c=>c.name.toLowerCase().includes(search)||c.phone.includes(search));
+  const w=$('customers-wrap');
+  if(!clients.length){w.innerHTML='<div class="empty"><div class="icon">👥</div><p>No customers yet</p></div>';return}
+  w.innerHTML=`<table class="tbl"><thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Avg. Order</th><th>Last Order</th></tr></thead><tbody>
+${clients.map(c=>`<tr><td><strong>${c.name}</strong></td><td>${c.phone||'—'}</td>
+<td><span class="tag">${c.count} order${c.count!==1?'s':''}</span></td>
+<td><strong style="color:var(--navy)">$${c.total.toFixed(2)}</strong></td>
+<td style="color:var(--muted)">$${(c.total/c.count).toFixed(2)}</td>
+<td>${fmtDate(c.last)}</td></tr>`).join('')}
+</tbody></table>`;
+}
+
+/* ── INVENTORY ── */
+function renderInventory(){
+  const inv=ldB('inv');
+  $('inv-inputs').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px">
+${MATS.map((m,i)=>`<div class="field"><label>${m.n}</label><input type="number" id="inv-in-${i}" value="${inv[i]||0}" min="0" step="0.5" placeholder="# of sheets"></div>`).join('')}</div>`;
+
+  const usage={};
+  ld('orders').forEach(o=>o.items.forEach(item=>{
+    const mi=MATS.findIndex(m=>m.n===item.material);
+    if(mi>=0)usage[mi]=(usage[mi]||0)+item.w*item.h*item.qty;
+  }));
+  $('stock-grid').innerHTML=MATS.map((m,i)=>{
+    const init=inv[i]||0,used=usage[i]||0,usedSh=used/SHEET_IN2,rem=Math.max(init-usedSh,0),pct=init>0?rem/init*100:0,low=rem<2;
+    return`<div class="stock-card ${low?'low-stock':'good-stock'}">
+<div class="stock-name">${m.n}</div>
+<div><span class="stock-val">${rem.toFixed(1)}</span> <span class="stock-sub">sheets remaining</span></div>
+<div class="stock-sub">Used: ${usedSh.toFixed(1)} sheets &nbsp;|&nbsp; Initial: ${init}</div>
+<div class="stock-bar"><div class="stock-bar-fill ${low?'low':''}" style="width:${pct}%;background:${low?'var(--danger)':'var(--success)'}"></div></div>
+${low?'<div class="stock-warn">⚠ Low stock — reorder soon</div>':''}
+</div>`;
+  }).join('');
+}
+function saveInventory(){
+  const inv={};MATS.forEach((_,i)=>{inv[i]=+($('inv-in-'+i)?.value)||0});
+  svB('inv',inv);renderInventory();alert('Inventory saved!');
+}
+
+/* ── FINANCIALS ── */
+function renderFinance(){
+  buildFilters();const month=$('fin-month')?.value||curM();
+  const allO=ld('orders'),mO=allO.filter(o=>o.date.startsWith(month));
+  const hrs=ld('hours').filter(r=>r.date.startsWith(month));
+  const gas=ld('gas').filter(r=>r.date.startsWith(month));
+  const rev=mO.reduce((s,o)=>s+o.total,0);
+  const matCost=matCostFromOrders(mO);
+  const wages=hrs.reduce((s,r)=>s+r.earnings,0),gasCost=gas.reduce((s,r)=>s+r.amount,0);
+  const gross=rev-matCost,net=gross-wages-gasCost,margin=rev>0?net/rev*100:0;
+
+  $('pnl-box').innerHTML=`<div class="pnl">
+<div class="pnl-heading">Profit & Loss — ${fmtMon(month)}</div>
+<div class="pnl-row"><span>💼 Total Revenue</span><span>$${rev.toFixed(2)}</span></div>
+<div class="pnl-row"><span style="opacity:.75">📦 Est. Material Cost</span><span style="color:#FCA5A5">− $${matCost.toFixed(2)}</span></div>
+<div class="pnl-row"><span style="opacity:.75">👔 Staff Wages</span><span style="color:#FCA5A5">− $${wages.toFixed(2)}</span></div>
+<div class="pnl-row"><span style="opacity:.75">⛽ Gas Expenses</span><span style="color:#FCA5A5">− $${gasCost.toFixed(2)}</span></div>
+<div class="pnl-net"><span>📈 Est. Net Profit</span><span style="color:${net>=0?'#4ADE80':'#F87171'}">$${net.toFixed(2)} (${margin.toFixed(1)}%)</span></div>
+</div>`;
+
+  const mmap={};mO.forEach(o=>o.items.forEach(i=>{const s=i.material.split('—')[0].trim();mmap[s]=(mmap[s]||0)+i.lineTotal}));
+  const topm=Object.entries(mmap).sort((a,b)=>b[1]-a[1]);const maxM=topm[0]?.[1]||1;
+  $('fin-mat').innerHTML=topm.length
+    ?`<div class="bar-chart">${topm.map(([n,v])=>`<div class="bar-row"><div class="bar-lbl">${n}</div><div class="bar-track"><div class="bar-fill" style="width:${v/maxM*100}%"></div></div><div class="bar-val">$${v.toFixed(0)}</div></div>`).join('')}</div>`
+    :'<div class="empty"><div class="icon">📦</div><p>No data</p></div>';
+
+  const smap={pending:0,done:0,delivered:0,cancelled:0};
+  mO.forEach(o=>smap[o.status]=(smap[o.status]||0)+1);const tot=mO.length||1;
+  $('fin-status').innerHTML=`<div class="bar-chart">
+${[['Pending',smap.pending,''],['Completed',smap.done,'green'],['Delivered',smap.delivered,'gold'],['Cancelled',smap.cancelled,'']].map(([l,v,c])=>`<div class="bar-row"><div class="bar-lbl">${l}</div><div class="bar-track"><div class="bar-fill ${c}" style="width:${v/tot*100}%"></div></div><div class="bar-val">${v} orders</div></div>`).join('')}</div>`;
+
+  const months=allMonths().slice(0,6).reverse();
+  const mdata=months.map(m=>({m,r:allO.filter(o=>o.date.startsWith(m)).reduce((s,o)=>s+o.total,0)}));
+  const maxR=Math.max(...mdata.map(x=>x.r),1);
+  $('fin-monthly').innerHTML=`<div class="bar-chart">${mdata.map(x=>`<div class="bar-row"><div class="bar-lbl">${fmtMon(x.m)}</div><div class="bar-track"><div class="bar-fill green" style="width:${x.r/maxR*100}%"></div></div><div class="bar-val">$${x.r.toFixed(0)}</div></div>`).join('')}</div>`;
+}
+
+/* ── STAFF ── */
+function renderStaff(){
+  buildFilters();const month=$('st-month')?.value||curM();
+  const hrs=ld('hours').filter(r=>r.date.startsWith(month)).sort((a,b)=>b.date.localeCompare(a.date));
+  const gas=ld('gas').filter(r=>r.date.startsWith(month)).sort((a,b)=>b.date.localeCompare(a.date));
+  const tH=hrs.reduce((s,r)=>s+r.hours,0),tW=hrs.reduce((s,r)=>s+r.earnings,0),tG=gas.reduce((s,r)=>s+r.amount,0);
+  $('st-hours').textContent=tH.toFixed(1)+'h';$('st-wages').textContent='$'+tW.toFixed(2);
+  $('st-gas').textContent='$'+tG.toFixed(2);$('st-total').textContent='$'+(tW+tG).toFixed(2);
+  $('st-hours-tbl').innerHTML=hrs.length
+    ?`<table class="tbl"><thead><tr><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Rate</th><th>Amount Due</th><th>Notes</th></tr></thead><tbody>
+${hrs.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.start}</td><td>${r.end}</td><td><strong>${r.hours.toFixed(2)}h</strong></td><td>$${(r.rate||0).toFixed(2)}/hr</td><td><strong style="color:var(--warning)">$${(r.earnings||0).toFixed(2)}</strong></td><td style="color:var(--muted);font-size:.78rem">${r.notes||'—'}</td></tr>`).join('')}
+</tbody></table>`
+    :'<div class="empty"><div class="icon">📋</div><p>No hours logged</p></div>';
+  $('st-gas-tbl').innerHTML=gas.length
+    ?`<table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Notes</th></tr></thead><tbody>
+${gas.map(r=>`<tr><td>${fmtDate(r.date)}</td><td><strong style="color:var(--danger)">$${r.amount.toFixed(2)}</strong></td><td style="color:var(--muted)">${r.notes||'—'}</td></tr>`).join('')}
+</tbody></table>`
+    :'<div class="empty"><div class="icon">⛽</div><p>No expenses logged</p></div>';
+}
+
+/* ── NEW ORDER ── */
+function genNoNum(){$('no-num').value='GMC-'+String(ld('orders').length+1).padStart(4,'0')}
+function matOptsN(){return MATS.map((m,i)=>`<option value="${i}">${m.n} — Sheet: $${m.cost} CAD</option>`).join('')}
+function addNOItem(){
+  noCount++;const id=noCount;const div=document.createElement('div');
+  div.className='item-row';div.id='noi-'+id;
+  div.innerHTML=`
+    <div class="field" style="flex:2"><label>Material</label><select onchange="calcNOItem(${id})">${matOptsN()}</select></div>
+    <div class="field" style="flex:0 0 90px"><label>Width (in)</label><input type="number" step="0.25" placeholder='0"' oninput="calcNOItem(${id})"></div>
+    <div class="field" style="flex:0 0 90px"><label>Length (in)</label><input type="number" step="0.25" placeholder='0"' oninput="calcNOItem(${id})"></div>
+    <div class="field" style="flex:0 0 60px"><label>Qty</label><input type="number" value="1" min="1" oninput="calcNOItem(${id})"></div>
+    <div class="field" style="flex:0 0 95px"><label>Price</label><input type="text" readonly id="nop-${id}" value="$0.00" style="background:#F0FDF4;font-weight:700;color:var(--success)"></div>
+    <div><button class="btn btn-danger btn-xs" onclick="removeNOItem(${id})" style="margin-top:20px;height:34px">✕</button></div>`;
+  $('no-items').appendChild(div);
+}
+function removeNOItem(id){const el=$('noi-'+id);if(el)el.remove();calcNOTotal()}
+function calcNOItem(id){
+  const row=$('noi-'+id);if(!row)return;
+  const sel=row.querySelector('select'),ins=row.querySelectorAll('input[type="number"]');
+  const mat=MATS[+sel.value],w=+ins[0].value||0,h=+ins[1].value||0,qty=+ins[2].value||1;
+  const cfg=ldS(),markup=(+cfg.markup||50)/100,cutFee=+cfg.cut||2;
+  const line=(w*h*(mat.cost/SHEET_IN2)*(1+markup)+cutFee)*qty;
+  $('nop-'+id).value='$'+line.toFixed(2);calcNOTotal();
+}
+function calcNOTotal(){
+  const cfg=ldS(),taxRate=(+cfg.tax||13)/100;let sub=0;
+  document.querySelectorAll('[id^="nop-"]').forEach(el=>sub+=parseFloat(el.value.replace('$',''))||0);
+  const tax=sub*taxRate;
+  $('no-sub').textContent='$'+sub.toFixed(2);$('no-tax').textContent='$'+tax.toFixed(2);
+  $('no-tax-pct').textContent=cfg.tax||13;$('no-total').textContent='$'+(sub+tax).toFixed(2)+' CAD';
+}
+function saveNewOrder(){
+  const num=$('no-num').value,date=$('no-date').value,client=$('no-client').value.trim(),phone=$('no-phone').value.trim(),notes=$('no-notes').value;
+  if(!date||!client){alert('Please enter date and customer name.');return}
+  const cfg=ldS(),taxRate=(+cfg.tax||13)/100;
+  const items=[];
+  document.querySelectorAll('[id^="noi-"]').forEach(row=>{
+    const sel=row.querySelector('select'),ins=row.querySelectorAll('input[type="number"]'),priceEl=row.querySelector('[id^="nop-"]');
+    if(!sel)return;const w=+ins[0].value||0,h=+ins[1].value||0,qty=+ins[2].value||1;
+    if(w>0&&h>0)items.push({material:MATS[+sel.value].n,w,h,qty,unitPrice:parseFloat((priceEl?.value||'0').replace('$',''))/qty,lineTotal:parseFloat((priceEl?.value||'0').replace('$',''))});
+  });
+  if(!items.length){alert('Please add at least one piece.');return}
+  const sub=items.reduce((s,i)=>s+i.lineTotal,0),tax=sub*taxRate;
+  const order={id:Date.now(),num,date,client,phone,notes,items,sub,tax,total:sub+tax,status:'pending'};
+  const orders=ld('orders');orders.push(order);sv('orders',orders);
+  $('no-client').value='';$('no-phone').value='';$('no-notes').value='';
+  $('no-items').innerHTML='';noCount=0;addNOItem();genNoNum();calcNOTotal();
+  showTab('orders');alert(`✅ Order ${num} saved!`);
+}
+
+/* ── SETTINGS ── */
+function applySettings(){
+  const s=ldS();
+  if(s.biz)$('s-biz').value=s.biz;if(s.bizPh)$('s-ph').value=s.bizPh;
+  if(s.bizEm)$('s-em').value=s.bizEm;if(s.bizAd)$('s-ad').value=s.bizAd;
+  if(s.tax)$('s-tax').value=s.tax;if(s.cut)$('s-cut').value=s.cut;if(s.markup)$('s-markup').value=s.markup;
+}
+function saveSettings(){
+  const s=ldS();
+  s.biz=$('s-biz').value;s.bizPh=$('s-ph').value;s.bizEm=$('s-em').value;s.bizAd=$('s-ad').value;
+  s.tax=+$('s-tax').value||13;s.cut=+$('s-cut').value||2;s.markup=+$('s-markup').value||50;
+  svS(s);alert('Settings saved!');
+}
+function clearOrders(){if(!confirm('Delete ALL orders permanently?'))return;sv('orders',[]);renderDash();renderOrders();renderCustomers();renderFinance()}
+function clearAll(){
+  if(!confirm('Delete ALL data (orders, hours, gas)?'))return;
+  ['orders','hours','gas'].forEach(k=>localStorage.removeItem('gmc_'+k));
+  localStorage.removeItem('gmcbiz_inv');
+  renderDash();renderOrders();renderCustomers();renderInventory();renderFinance();renderStaff();
+}
+
+/* ══════════════════════════════════════
+   FILE ATTACHMENTS — IndexedDB
+══════════════════════════════════════ */
+let _db=null;
+function initDB(){
+  return new Promise(r=>{
+    const req=indexedDB.open('gmc_files',1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore('files',{keyPath:'key'});
+    req.onsuccess=e=>{_db=e.target.result;r()};
+    req.onerror=r;
+  });
+}
+function _saveFile(key,file){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const tx=_db.transaction('files','readwrite');
+      const store=tx.objectStore('files');
+      const req=store.get(key);
+      req.onsuccess=ev=>{
+        const rec=ev.target.result||{key,files:[]};
+        rec.files.push({name:file.name,type:file.type,data:e.target.result,date:new Date().toISOString()});
+        store.put(rec);tx.oncomplete=resolve;
+      };
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function _getFiles(key){
+  return new Promise(resolve=>{
+    if(!_db){resolve([]);return}
+    const req=_db.transaction('files','readonly').objectStore('files').get(key);
+    req.onsuccess=e=>resolve(e.target.result?.files||[]);
+    req.onerror=()=>resolve([]);
+  });
+}
+function _removeFile(key,idx){
+  return new Promise(resolve=>{
+    const tx=_db.transaction('files','readwrite');
+    const store=tx.objectStore('files');
+    const req=store.get(key);
+    req.onsuccess=e=>{
+      const rec=e.target.result;
+      if(rec){rec.files.splice(idx,1);store.put(rec);}
+      tx.oncomplete=resolve;
+    };
+  });
+}
+async function _updBtn(btnId,key){
+  const c=(await _getFiles(key)).length;
+  const b=$(btnId);if(!b)return;
+  b.innerHTML=c?`📎 ${c}`:'📎';
+  b.className=c?'btn btn-navy btn-xs':'btn btn-ghost btn-xs';
+}
+
+/* ── ATTACHMENT MODAL ── */
+let _aKey=null,_aRefresh=null;
+function openAttach(key,label,refresh){
+  _aKey=key;_aRefresh=refresh||null;
+  $('am-title').textContent=label;
+  _renderAM();
+  $('attach-modal').style.display='flex';
+}
+function closeAttach(){
+  $('attach-modal').style.display='none';
+  if(_aRefresh)_aRefresh();
+  _aKey=null;
+}
+async function _renderAM(){
+  const files=await _getFiles(_aKey);
+  const w=$('am-files');
+  if(!files.length){
+    w.innerHTML='<p style="color:#9CA3AF;text-align:center;padding:24px;font-size:.83rem">No files attached yet.</p>';
+    return;
+  }
+  w.innerHTML=files.map((f,i)=>`
+  <div style="display:flex;align-items:center;gap:10px;padding:10px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:8px">
+    ${f.type.startsWith('image/')
+      ?`<img src="${f.data}" style="width:46px;height:46px;object-fit:cover;border-radius:6px;flex-shrink:0;cursor:pointer" onclick="_viewFile(${i})">`
+      :`<div onclick="_viewFile(${i})" style="width:46px;height:46px;background:#EFF6FF;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;cursor:pointer">📄</div>`}
+    <div style="flex:1;min-width:0">
+      <div style="font-size:.81rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div>
+      <div style="font-size:.7rem;color:var(--muted)">${new Date(f.date).toLocaleDateString()}</div>
+    </div>
+    <button class="btn btn-navy btn-xs" onclick="_viewFile(${i})">View</button>
+    <button class="btn btn-danger btn-xs" onclick="_delFile(${i})">✕</button>
+  </div>`).join('');
+}
+async function _viewFile(idx){
+  const files=await _getFiles(_aKey);const f=files[idx];if(!f)return;
+  if(f.type.startsWith('image/')){
+    const w=window.open('','_blank');
+    w.document.write(`<html><body style="margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh"><img src="${f.data}" style="max-width:100%;max-height:100vh;object-fit:contain"></body></html>`);
+  }else{
+    const bytes=atob(f.data.split(',')[1]),ab=new ArrayBuffer(bytes.length),ia=new Uint8Array(ab);
+    for(let i=0;i<bytes.length;i++)ia[i]=bytes.charCodeAt(i);
+    window.open(URL.createObjectURL(new Blob([ab],{type:'application/pdf'})),'_blank');
+  }
+}
+async function _delFile(idx){
+  if(!confirm('Remove this file?'))return;
+  await _removeFile(_aKey,idx);_renderAM();
+}
+function _triggerUpload(){$('_fi').click()}
+async function _handleUpload(input){
+  if(!_aKey||!input.files.length)return;
+  const btn=$('am-ubtn');btn.textContent='Uploading...';btn.disabled=true;
+  for(const f of input.files)await _saveFile(_aKey,f);
+  input.value='';btn.textContent='+ Upload Image / PDF';btn.disabled=false;
+  _renderAM();
+}
+
+/* ── DOCUMENTS TAB ── */
+function getDocList(){return JSON.parse(localStorage.getItem('gmc_doc_list')||'[]')}
+function setDocList(l){localStorage.setItem('gmc_doc_list',JSON.stringify(l))}
+async function uploadDocs(input){
+  if(!input.files.length)return;
+  const label=$('doc-label').value.trim()||'Document';
+  for(const f of input.files){
+    const key='doc_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    await new Promise(resolve=>{
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const tx=_db.transaction('files','readwrite');
+        tx.objectStore('files').put({key,files:[{name:f.name,type:f.type,data:e.target.result,date:new Date().toISOString()}]});
+        tx.oncomplete=resolve;
+      };
+      reader.readAsDataURL(f);
+    });
+    const list=getDocList();
+    list.unshift({key,name:f.name,label,type:f.type,date:new Date().toISOString()});
+    setDocList(list);
+  }
+  input.value='';if($('doc-label'))$('doc-label').value='';renderDocs();
+}
+async function renderDocs(){
+  const search=($('doc-search')?.value||'').toLowerCase();
+  let list=getDocList();
+  if(search)list=list.filter(d=>d.name.toLowerCase().includes(search)||d.label.toLowerCase().includes(search));
+  const w=$('docs-wrap');if(!w)return;
+  if(!list.length){w.innerHTML='<div class="empty"><div class="icon">📁</div><p>No documents uploaded yet</p></div>';return}
+  w.innerHTML=`<table class="tbl"><thead><tr><th>Type</th><th>Label</th><th>File Name</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+${list.map(d=>`<tr>
+  <td>${d.type.startsWith('image/')?'🖼️ Image':'📄 PDF'}</td>
+  <td><strong>${d.label}</strong></td>
+  <td style="color:var(--muted);font-size:.78rem">${d.name}</td>
+  <td>${new Date(d.date).toLocaleDateString()}</td>
+  <td style="display:flex;gap:4px">
+    <button class="btn btn-navy btn-xs" onclick="viewDoc('${d.key}')">View</button>
+    <button class="btn btn-danger btn-xs" onclick="delDoc('${d.key}')">✕</button>
+  </td>
+</tr>`).join('')}
+</tbody></table>`;
+}
+async function viewDoc(key){
+  const files=await _getFiles(key);const f=files[0];if(!f)return;
+  if(f.type.startsWith('image/')){
+    const w=window.open('','_blank');
+    w.document.write(`<html><body style="margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh"><img src="${f.data}" style="max-width:100%;max-height:100vh;object-fit:contain"></body></html>`);
+  }else{
+    const bytes=atob(f.data.split(',')[1]),ab=new ArrayBuffer(bytes.length),ia=new Uint8Array(ab);
+    for(let i=0;i<bytes.length;i++)ia[i]=bytes.charCodeAt(i);
+    window.open(URL.createObjectURL(new Blob([ab],{type:'application/pdf'})),'_blank');
+  }
+}
+async function delDoc(key){
+  if(!confirm('Delete this document permanently?'))return;
+  setDocList(getDocList().filter(d=>d.key!==key));
+  const tx=_db.transaction('files','readwrite');tx.objectStore('files').delete(key);
+  renderDocs();
+}
+
+initDB().then(()=>{init();});
+</script>
+</body>
+</html>
